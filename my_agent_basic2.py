@@ -39,10 +39,8 @@ def calculer_depth(state : State):
     if nb_pieces == 0 : return 0
 
     if nb_pieces < 10 : return 5
-
     elif nb_pieces < 24 : return 6
-
-    else: return 6 + (nb_pieces - 24) // 3
+    else : return 6 + (nb_pieces - 24) // 3
 
 
 def max_value(state: State, alpha, beta, cutoff: int, root_player: int, timout : float, start : float):
@@ -125,56 +123,26 @@ def evaluation(state: State, root_player: int):
 
 
 def line_score(cells : list[tuple[str, int]], root_player : int, opponent : int, state : State) :
-    score = 0
+    own2 = own1 = False
+    adv2 = adv1 = False
+    x_piece2 = x_piece1 = False
+    o_piece2 = o_piece1 = False
+    empty = score = 0
+
     for i in range(6) :
-        own2 = own1 = False
-        adv2 = adv1 = False
-        x_piece2 = x_piece1 = False
-        o_piece2 = o_piece1 = False
 
         if not cells[i] :
             if i <= 3 :
                 c_plus1, c_plus2 = cells[i+1], cells[i+2]
                 if c_plus1 and c_plus2 :
-                    
-                    if [c_plus1[1],  c_plus2[1]].count(root_player) == 2 :
-                        if (i > 0 and not cells[i-1]) or (i+3 < 6 and not cells[i+3]) : score += 10
-                        own2 = True
-
-                    if [c_plus1[1],  c_plus2[1]].count(opponent) == 2 :
-                        if i > 0 and not cells[i-1] or (i+3 < 6 and not cells[i+3]): score -= 12
-                        adv2 = True
-
+                    if [c_plus1[1],  c_plus2[1]].count(root_player) == 2 : score += 10 ; own2 = True
+                    if [c_plus1[1],  c_plus2[1]].count(opponent) == 2 : score -= 12 ; adv2 = True
                     if [c_plus1[0],  c_plus2[0]].count("x") == 2 : x_piece2 = True
                     if [c_plus1[0],  c_plus2[0]].count("o") == 2 : o_piece2 = True
-
-                    if (
-                        [c_plus1[0], c_plus2[0]].count("x") == 2 and
-                        state.pieces_x[root_player] >= 2 and
-                        ((i > 0 and not cells[i-1]) or (i+3 < 6 and not cells[i+3]))
-                       ) :
-                        score += 10
-                    
-                    if (
-                        [c_plus1[0],  c_plus2[0]].count("o") == 2 and
-                        state.pieces_o[root_player] >= 2 and
-                        ((i > 0 and not cells[i-1]) or (i+3 < 6 and not cells[i+3]))
-                       ) :
-                        score += 10
-
-                    if (
-                        [c_plus1[0],  c_plus2[0]].count("x") == 2 and
-                        state.pieces_x[opponent] >= 2 and
-                        ((i > 0 and not cells[i-1]) or (i+3 < 6 and not cells[i+3]))
-                       ) :
-                        score -= 12
-
-                    if (
-                        [c_plus1[0],  c_plus2[0]].count("o") == 2 and
-                        state.pieces_o[opponent] >= 2 and
-                        ((i > 0 and not cells[i-1]) or (i+3 < 6 and not cells[i+3]))
-                       ) :
-                        score -= 12
+                    if [c_plus1[0],  c_plus2[0]].count("x") == 2 and state.pieces_x[root_player] >= 2 : score += 10
+                    if [c_plus1[0],  c_plus2[0]].count("o") == 2 and state.pieces_o[root_player] >= 2 : score += 10
+                    if [c_plus1[0],  c_plus2[0]].count("x") == 2 and state.pieces_x[opponent] >= 2 : score -= 12
+                    if [c_plus1[0],  c_plus2[0]].count("o") == 2 and state.pieces_o[opponent] >= 2 : score -= 12
 
             if i <= 2 and (own2 or adv2 or x_piece2 or o_piece2) :
                 c_plus3 = cells[i+3]
@@ -187,60 +155,26 @@ def line_score(cells : list[tuple[str, int]], root_player : int, opponent : int,
                     if x_piece2 and c_plus3[0] == "x" and state.pieces_x[opponent] >= 1 : score -= 50
                     if o_piece2 and c_plus3[0] == "o" and state.pieces_o[opponent] >= 1 : score -= 50
 
-            own2 = own1 = False
-            adv2 = adv1 = False
-            x_piece2 = x_piece1 = False
-            o_piece2 = o_piece1 = False
-
             if i >= 2 :
                 c_moin1, c_moin2 = cells[i-1], cells[i-2]
 
                 if c_moin2 and c_moin1 :
-                    if [c_moin1[1],  c_moin2[1]].count(root_player) == 2 :
-                        if (i < 5 and not cells[i+1]) or (i-3 >= 0 and not cells[i-3]) : score += 10
-                        own2 = True
-
-                    if [c_moin1[1],  c_moin2[1]].count(opponent) == 2 : 
-                        if (i < 5 and not cells[i+1]) or (i-3 >= 0 and not cells[i-3]) : score -= 12
-                        adv2 = True
-
-                    if [c_moin1[0],  c_moin2[0]].count("x") == 2 : x_piece2 = True
-                    if [c_moin1[0],  c_moin2[0]].count("o") == 2 : o_piece2 = True
-
-                    if (
-                        [c_moin1[0],  c_moin2[0]].count("x") == 2 and
-                        state.pieces_x[root_player] >= 2 and
-                        ((i < 5 and not cells[i+1]) or (i-3 >= 0 and not cells[i-3]))
-                       ) :
-                        score += 10
-
-                    if (
-                        [c_moin1[0],  c_moin2[0]].count("o") == 2 and
-                        state.pieces_o[root_player] >= 2 and 
-                        ((i < 5 and not cells[i+1]) or (i-3 >= 0 and not cells[i-3]))
-                       ) :
-                        score += 10
-
-                    if (
-                        [c_moin1[0],  c_moin2[0]].count("x") == 2 and
-                        state.pieces_x[opponent] >= 2 and
-                        ((i < 5 and not cells[i+1]) or (i-3 >= 0 and not cells[i-3]))
-                       ) : score -= 12
-                    
-                    if (
-                        [c_moin1[0],  c_moin2[0]].count("o") == 2 and
-                        state.pieces_o[opponent] >= 2 and
-                        ((i < 5 and not cells[i+1]) or (i-3 >= 0 and not cells[i-3]))
-                       ) : score -= 12
+                    if i>=4 and [c_moin1[1],  c_moin2[1]].count(root_player) == 2 : score += 10
+                    if i>=4 and [c_moin1[1],  c_moin2[1]].count(opponent) == 2: score -= 12
+                    if i>=4 and [c_moin1[0],  c_moin2[0]].count("x") == 2 and state.pieces_x[root_player] >= 2 : score += 10
+                    if i>=4 and [c_moin1[0],  c_moin2[0]].count("o") == 2 and state.pieces_o[root_player] >= 2 : score += 10
+                    if i>=4 and [c_moin1[0],  c_moin2[0]].count("x") == 2 and state.pieces_x[opponent] >= 2 : score -= 12
+                    if i>=4 and [c_moin1[0],  c_moin2[0]].count("o") == 2 and state.pieces_o[opponent] >= 2 : score -= 12
 
             if i >= 3 and (own2 or adv2 or x_piece2 or o_piece2):
                 c_moin3 = cells[i-3]
 
                 if c_moin3 :
-                    if c_moin3[1] ==  root_player : score += 40
-                    if c_moin3[1] == opponent : score -= 50
-                    if c_moin3[0] == "x" and state.pieces_x[root_player] >= 1 : score += 40
-                    if c_moin3[0] == "o" and state.pieces_o[root_player] >= 1 : score += 40
-                    if c_moin3[0] == "x" and state.pieces_x[opponent] >= 1 : score -= 50
-                    if c_moin3[0] == "o" and state.pieces_o[opponent] >= 1 : score -= 50
+                    if i>=4 and c_moin3[1] ==  root_player : score += 40
+                    if i>=4 and c_moin3[1] == opponent : score -= 50
+                    if i>=4 and c_moin3[0] == "x" and state.pieces_x[root_player] >= 1 : score += 40
+                    if i>=4 and c_moin3[0] == "o" and state.pieces_o[root_player] >= 1 : score += 40
+                    if i>=4 and c_moin3[0] == "x" and state.pieces_x[opponent] >= 1 : score -= 50
+                    if i>=4 and c_moin3[0] == "o" and state.pieces_o[opponent] >= 1 : score -= 50
+
     return score

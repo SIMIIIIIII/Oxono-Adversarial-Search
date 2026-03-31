@@ -1,0 +1,134 @@
+============================================================
+  OXONO — Results summary
+============================================================
+
+--- Per-matchup details ---
+
+  base1_base2.txt
+    Agent                    Wins        %
+    ---------------------- ------  -------
+    my_agent_basic.py          12    60.0%
+    my_agent_basic2.py          8    40.0%
+    Draws                       0     0.0%
+    Total games: 20
+
+  base2_base1.txt
+    Agent                    Wins        %
+    ---------------------- ------  -------
+    my_agent_basic2.py         11    55.0%
+    my_agent_basic.py           9    45.0%
+    Draws                       0     0.0%
+    Total games: 20
+
+  agent_base.txt
+    Agent                    Wins        %
+    ---------------------- ------  -------
+    my_agent.py                 8    40.0%
+    my_agent_basic.py          12    60.0%
+    Draws                       0     0.0%
+    Total games: 20
+
+  base_agent.txt
+    Agent                    Wins        %
+    ---------------------- ------  -------
+    my_agent_basic.py          12    60.0%
+    my_agent.py                 8    40.0%
+    Draws                       0     0.0%
+    Total games: 20
+
+  agent_base2.txt
+    Agent                    Wins        %
+    ---------------------- ------  -------
+    my_agent.py                 9    45.0%
+    my_agent_basic2.py         11    55.0%
+    Draws                       0     0.0%
+    Total games: 20
+
+  base2_agent.txt
+    Agent                    Wins        %
+    ---------------------- ------  -------
+    my_agent_basic2.py          8    40.0%
+    my_agent.py                12    60.0%
+    Draws                       0     0.0%
+    Total games: 20
+
+--- Combined (same pair, both sides) ---
+
+  my_agent_basic.py  vs  my_agent_basic2.py  (combined)
+    Agent                    Wins        %
+    ---------------------- ------  -------
+    my_agent_basic.py          21    52.5%
+    my_agent_basic2.py         19    47.5%
+    Draws                       0     0.0%
+    Total games: 40
+
+  my_agent.py  vs  my_agent_basic.py  (combined)
+    Agent                    Wins        %
+    ---------------------- ------  -------
+    my_agent.py                16    40.0%
+    my_agent_basic.py          24    60.0%
+    Draws                       0     0.0%
+    Total games: 40
+
+  my_agent.py  vs  my_agent_basic2.py  (combined)
+    Agent                    Wins        %
+    ---------------------- ------  -------
+    my_agent.py                21    52.5%
+    my_agent_basic2.py         19    47.5%
+    Draws                       0     0.0%
+    Total games: 40
+
+--- Global per-agent totals ---
+
+  Agent                    Wins   Draws   Games     Win%
+  ---------------------- ------  ------  ------  -------
+  my_agent_basic.py          45       0      80    56.2%
+  my_agent_basic2.py         38       0      80    47.5%
+  my_agent.py                37       0      80    46.2%
+
+--- Timing stats (from logs) ---
+
+  base1_base2.txt
+    Agent                       Total   Moves    Avg/move    Max move
+    ---------------------- ----------  ------  ----------  ----------
+    my_agent_basic.py        350.763s     167      2.100s     17.457s
+    my_agent_basic2.py       822.734s     155      5.308s     42.051s
+
+  base2_base1.txt
+    Agent                       Total   Moves    Avg/move    Max move
+    ---------------------- ----------  ------  ----------  ----------
+    my_agent_basic2.py       886.078s     181      4.895s     45.324s
+    my_agent_basic.py        582.679s     170      3.428s     44.671s
+
+  agent_base.txt
+    Agent                       Total   Moves    Avg/move    Max move
+    ---------------------- ----------  ------  ----------  ----------
+    my_agent.py              791.455s     175      4.523s     41.614s
+    my_agent_basic.py        484.970s     167      2.904s     25.637s
+
+  base_agent.txt
+    Agent                       Total   Moves    Avg/move    Max move
+    ---------------------- ----------  ------  ----------  ----------
+    my_agent_basic.py        442.921s     157      2.821s     29.547s
+    my_agent.py             1220.484s     145      8.417s     69.756s
+
+  agent_base2.txt
+    Agent                       Total   Moves    Avg/move    Max move
+    ---------------------- ----------  ------  ----------  ----------
+    my_agent.py              887.125s     133      6.670s     44.137s
+    my_agent_basic2.py      1126.489s     124      9.085s     56.250s
+
+  base2_agent.txt
+    Agent                       Total   Moves    Avg/move    Max move
+    ---------------------- ----------  ------  ----------  ----------
+    my_agent_basic2.py       608.182s     130      4.678s     31.044s
+    my_agent.py             1145.191s     122      9.387s     61.935s
+
+  Global per-agent timing
+    Agent                       Total   Moves    Avg/move    Max move
+    ---------------------- ----------  ------  ----------  ----------
+    my_agent.py             4044.255s     575      7.033s     69.756s
+    my_agent_basic2.py      3443.482s     590      5.836s     56.250s
+    my_agent_basic.py       1861.333s     661      2.816s     44.671s
+
+============================================================

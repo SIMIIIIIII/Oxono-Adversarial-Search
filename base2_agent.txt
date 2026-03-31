@@ -1,0 +1,100 @@
+
+=== Temporary results over 1 game(s) ===
+  my_agent_basic2.py   wins:    1  (100.0%)
+  my_agent.py          wins:    0  (0.0%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 2 game(s) ===
+  my_agent_basic2.py   wins:    1  (50.0%)
+  my_agent.py          wins:    1  (50.0%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 3 game(s) ===
+  my_agent_basic2.py   wins:    1  (33.3%)
+  my_agent.py          wins:    2  (66.7%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 4 game(s) ===
+  my_agent_basic2.py   wins:    1  (25.0%)
+  my_agent.py          wins:    3  (75.0%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 5 game(s) ===
+  my_agent_basic2.py   wins:    1  (20.0%)
+  my_agent.py          wins:    4  (80.0%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 6 game(s) ===
+  my_agent_basic2.py   wins:    1  (16.7%)
+  my_agent.py          wins:    5  (83.3%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 7 game(s) ===
+  my_agent_basic2.py   wins:    1  (14.3%)
+  my_agent.py          wins:    6  (85.7%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 8 game(s) ===
+  my_agent_basic2.py   wins:    2  (25.0%)
+  my_agent.py          wins:    6  (75.0%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 9 game(s) ===
+  my_agent_basic2.py   wins:    2  (22.2%)
+  my_agent.py          wins:    7  (77.8%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 10 game(s) ===
+  my_agent_basic2.py   wins:    3  (30.0%)
+  my_agent.py          wins:    7  (70.0%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 11 game(s) ===
+  my_agent_basic2.py   wins:    4  (36.4%)
+  my_agent.py          wins:    7  (63.6%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 12 game(s) ===
+  my_agent_basic2.py   wins:    4  (33.3%)
+  my_agent.py          wins:    8  (66.7%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 13 game(s) ===
+  my_agent_basic2.py   wins:    4  (30.8%)
+  my_agent.py          wins:    9  (69.2%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 14 game(s) ===
+  my_agent_basic2.py   wins:    4  (28.6%)
+  my_agent.py          wins:   10  (71.4%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 15 game(s) ===
+  my_agent_basic2.py   wins:    5  (33.3%)
+  my_agent.py          wins:   10  (66.7%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 16 game(s) ===
+  my_agent_basic2.py   wins:    6  (37.5%)
+  my_agent.py          wins:   10  (62.5%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 17 game(s) ===
+  my_agent_basic2.py   wins:    7  (41.2%)
+  my_agent.py          wins:   10  (58.8%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 18 game(s) ===
+  my_agent_basic2.py   wins:    7  (38.9%)
+  my_agent.py          wins:   11  (61.1%)
+  Draws:                        0  (0.0%)
+
+=== Temporary results over 19 game(s) ===
+  my_agent_basic2.py   wins:    8  (42.1%)
+  my_agent.py          wins:   11  (57.9%)
+  Draws:                        0  (0.0%)
+
+=== Results over 20 game(s) ===
+  my_agent_basic2.py   wins:    8  (40.0%)
+  my_agent.py          wins:   12  (60.0%)
+  Draws:                        0  (0.0%)
