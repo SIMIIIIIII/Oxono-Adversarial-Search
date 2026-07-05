@@ -1,0 +1,337 @@
+\textit{Protocole expérimental commun à toutes les sections.} Les expériences sont réalisées avec le script \texttt{manager.py} fourni par le cours (non modifié), via la commande \texttt{python3 manager.py -n N -p0 agent\_A.py -p1 agent\_B.py}. Chaque agent s'exécute dans un sous-processus isolé ; le gestionnaire lui alloue un budget de 300 secondes par partie et force l'arrêt du processus si ce budget est dépassé. Les statistiques sont compilées avec \texttt{analyze\_results.py}. Sauf mention contraire, chaque campagne porte sur 60 parties (30 avec l'agent~A en joueur~0, 30 avec les rôles échangés).
+
+\bigskip
+\section{Agent de base}
+
+\subsection{Choix de l'algorithme de base}
+
+Pour notre premier agent, nous avons choisi \textbf{Alpha-Bêta} comme algorithme de base plutôt que MCTS, pour les raisons suivantes :\\
+
+\begin{itemize}
+    \item Oxono se joue sur un plateau de 6x6 ; l'espace de recherche reste donc exploitable par une recherche déterministe bien optimisée.
+    
+    \item Alpha-Bêta permet d'explorer plus profondément l'arbre de recherche grâce aux coupures, ce qui améliore la qualité des décisions à budget de temps identique.
+    
+    \item Avec un budget de simulation limité, MCTS peut manquer certaines menaces tactiques immédiates si les simulations sont trop bruitées.
+    
+    \item Pour Oxono, il est relativement simple de concevoir une fonction d'évaluation heuristique exploitable par Alpha-Bêta.
+\end{itemize}
+
+
+\subsection{La gestion de la profondeur ou cutoff}
+
+La gestion de la profondeur est un facteur central de performance. Une profondeur élevée améliore l'anticipation tactique, mais augmente fortement le temps de calcul. À l'inverse, une faible profondeur réduit le coût de recherche au prix de décisions moins robustes.
+
+Pour répartir le budget temporel, nous divisons le temps restant par le nombre de pièces encore à jouer. Nous avons également adopté une profondeur adaptative, plus faible en début de partie et plus élevée en fin de partie. Les choix retenus sont les suivants :\\
+
+\begin{itemize}
+    \item Lorsqu'aucune pièce n'est encore placée, l'agent choisit une action aléatoire.
+
+    \item S'il y a moins de 10 pièces sur le plateau, la profondeur utilisée est 5.
+
+    \item S'il y a moins de 24 pièces sur le plateau, la profondeur passe à 6.
+
+    \item À partir de 24 pièces, la profondeur devient : $6 + (nb\_pieces - 24) // 3$.
+\end{itemize}
+
+\subsection{La fonction heuristique}
+
+Pour cette première version, nous avons choisi une fonction d'évaluation volontairement simple afin de préserver la profondeur de recherche. Les principaux termes sont :\\
+
+\begin{itemize}
+    \item Si une ligne ou une colonne contient 3 pièces successives de la couleur de l'agent et une case vide, un bonus de $+40$ est ajouté.
+    
+    \item Si 3 pièces successives appartiennent à l'adversaire, une pénalité de $-50$ est appliquée pour privilégier un comportement défensif.
+    
+    \item Des règles analogues sont utilisées pour les configurations à 2 pièces alignées et 2 cases vides, avec des pondérations plus prudentes.
+    
+    \item Les mêmes principes sont appliqués aux symboles, en vérifiant la disponibilité des pièces correspondantes dans les réserves des deux joueurs.
+\end{itemize}
+
+\subsection{Comparaison avec random Agent}
+Nous avons joué 60 matchs : 30 avec \texttt{random\_agent.py} en premier joueur et 30 avec notre agent en premier joueur. Les résultats montrent que l'agent heuristique domine largement l'agent aléatoire.\\
+
+\begin{tabular}{|l|c|r|}
+    \hline
+    Agent & Wins & \% \\
+    \hline
+    my\_agent.py & 60 & 100.0\% \\
+    random\_agent.py & 0 & 0.0\% \\
+    \hline 
+\end{tabular}
+\begin{tabular}{|l|r|r|r|r|}
+    \hline
+    Agent & Total & Moves & Avg/move & Max move \\
+    \hline
+    random\_agent.py & 0.184s & 457 & 0.0004s & 0.001s \\
+    my\_agent.py & 2489.61s & 487 & 5.112s & 45.502s \\
+    \hline
+\end{tabular}
+
+\bigskip
+La colonne \textit{Avg/move} est la plus informative pour analyser le coût de décision. Le temps moyen par coup est nettement plus élevé pour notre agent, ce qui est attendu puisqu'il effectue une recherche. L'écart de temps total peut être influencé par la longueur variable des parties et l'initialisation (premier coup aléatoire très rapide).
+
+\subsection{Problème de l'agent}
+Bien que cet agent soit supérieur à l'agent aléatoire, nous avons identifié plusieurs limites d'implémentation :\\
+
+\begin{itemize}
+    \item \textbf{Gestion du timeout} : l'algorithme ne s'interrompait pas proprement quand le budget de temps était atteint ; il terminait des évaluations supplémentaires avant de retourner un coup.
+
+    \item \textbf{Détection incomplète des motifs} : la prise en compte des cases vides était asymétrique (principalement avant l'alignement), ce qui ignorait certains motifs pertinents.
+\end{itemize}
+
+\subsection{Comparaison de l'agent basic avec la version avec la fonction d'evaluation renforcée}
+
+Nous avons ensuite corrigé la prise en compte de la localisation des cases vides et comparé la version initiale à une version heuristique renforcée.
+
+Les résultats indiquent que la version \texttt{v1} reste meilleure que la version plus complexe. Une explication plausible est que le double comptage de certaines menaces mixtes introduit du bruit dans le signal heuristique et dégrade l'ordonnancement des coups.\\
+
+\begin{tabular}{|l|c|r|}
+    \hline
+    Agent & Wins & \% \\
+    \hline
+    my\_agent.py & 37 & 61.7\% \\
+    my\_agent\_v2.py & 23 & 38.3\% \\
+    Draws & 0 & 0.0\%\\
+    \hline 
+\end{tabular}
+\begin{tabular}{|l|r|r|r|r|}
+    \hline
+    Agent & Total & Moves & Avg/move & Max move \\
+    \hline
+    my\_agent.py & 2048.644s & 507 & 4.041s & 46.044s \\
+    my\_agent\_v2.py & 3609.257s & 500 & 7.219s & 91.130s \\
+    \hline
+\end{tabular}
+
+\bigskip
+
+Ces résultats confirment le compromis classique entre complexité de l'heuristique et profondeur atteinte : une heuristique plus simple permet d'explorer davantage de nœuds dans le même budget de temps.
+
+En pratique, une heuristique simple mais rapide est plus efficace dans ce contexte de recherche contrainte en temps.
+
+
+\section{Agent Alpha-Beta Iterative Deepening Search}
+
+\subsection{Pourquoi ce choix ?}
+Sans \textit{iterative deepening}, une recherche lancée directement à profondeur fixe peut être interrompue au milieu d'un niveau et produire un résultat partiel peu fiable.\\
+
+Avec \textit{iterative deepening}, nous exécutons successivement les profondeurs $1,2,3,\dots,d$. Si le timeout survient à la profondeur $d$, nous conservons le meilleur coup de la profondeur $d-1$, entièrement évaluée. Les résultats intermédiaires servent aussi à mieux trier les coups, ce qui améliore les coupures Alpha-Bêta.
+
+\subsection{Gestion du timeout}
+
+Pour corriger le problème de dépassement temporel, nous avons appliqué les choix suivants :\\
+
+\begin{itemize}
+    \item Remplacement de \texttt{time.time()} par \texttt{time.perf\_counter()} pour une mesure plus stable et plus précise.
+    \item Ajout d'une exception \texttt{SearchTimeout} levée dès que la deadline est atteinte.
+    \item Gestion de cette exception dans \texttt{act()} afin de retourner le meilleur coup du dernier niveau complété.
+    \item Adoption d'un plancher de $0.05$ seconde pour éviter les budgets trop faibles.
+\end{itemize}
+
+\subsection{Fonction heuristique : priorité d'action}
+Avant d'évaluer chaque action, nous appliquons un tri des coups pour explorer d'abord les plus prometteurs. Les critères principaux sont les suivants :\\
+
+\begin{itemize}
+    \item Une préférence pour les coups proches du centre.
+    \item Une pénalisation croissante des coups excentrés.
+    \item Une valorisation des structures locales favorables autour de la case jouée.
+\end{itemize}
+
+
+\subsection{Alpha-beta vs Iterative deepening}
+Dans cette expérience, nous comparons \texttt{my\_agent\_basic2.py} (notre baseline) et \texttt{my\_agent\_iter\_v1.py} (iterative deepening sans table de transposition) sur 60 matchs. Les deux sens de jeu sont exécutés avec la même commande \texttt{manager.py}, puis agrégés avec \texttt{analyze\_results.py} (fichier de synthèse : \texttt{RESULTATS/res\_base2\_iter1.txt}).\\
+
+\begin{tabular}{|l|c|r|}
+    \hline
+    Agent & Wins & \% \\
+    \hline
+    my\_agent\_basic2.py & 35 & 58.3\% \\
+    my\_agent\_iter\_v1.py & 25 & 41.7\% \\
+    Draws & 0 & 0\%\\
+    \hline 
+\end{tabular}
+\begin{tabular}{|l|r|r|r|r|}
+    \hline
+    Agent & Total & Moves & Avg/move & Max move \\
+    \hline
+    my\_agent\_basic2.py & 7543.156s & 308 & 24.491s & 152.732s \\
+    my\_agent\_iter\_v1.py & 2985.493s & 303 & 9.853s & 26.246s \\
+    \hline
+\end{tabular}
+
+\bigskip
+Le tableau de temps révèle le problème central : \texttt{my\_agent\_basic2.py} affiche un Max/move de 152.732s, soit plus de la moitié du budget total, contre 26.246s pour la version itérative. Ce dépassement montre que le mécanisme de cutoff de \texttt{my\_agent\_basic2.py} ne respectait pas correctement le budget : l'agent terminait parfois une recherche profonde avant de retourner un résultat, sans être interrompu par le gestionnaire, uniquement parce que son budget total de 300s n'était pas encore épuisé. Le taux de victoire de 58.3\% reflète donc un avantage de temps de calcul non contrôlé et non reproductible, et non une meilleure qualité stratégique. C'est précisément ce problème que l'iterative deepening corrige, en garantissant un coup valide à tout instant grâce au mécanisme d'arrêt propre et au retour du meilleur coup du \textit{dernier niveau complété}. En contrepartie, l'iterative deepening recalcule les profondeurs successives ($1$ à $d$), ce qui introduit un surcoût de calcul.
+
+Nous avons donc évalué l'ajout d'une table de transposition pour compenser ce surcoût.
+
+
+\section{Agent Alpha-Beta Iterative Deepening avec une Table de transposition}
+
+\subsection{Pourquoi ce choix ?}
+Dans Oxono, un même état peut être atteint par plusieurs ordres de coups. L'idée de la table de transposition est donc de mémoriser les états déjà évalués pour éviter des recalculs redondants.
+
+\subsection{La composition de la table de transposition}
+La table est implémentée sous forme de dictionnaire Python. La clé est un tuple composé de l'état du plateau, des réserves de pièces des deux joueurs, de l'identité du joueur racine et du joueur au trait.
+
+Pour chaque entrée, nous stockons : meilleur coup, valeur estimée, profondeur, et un drapeau \texttt{UPPER}/\texttt{LOWER}/\texttt{EXACT} selon la relation de la valeur à la fenêtre $[\alpha,\beta]$.
+
+\subsection{Comparaison avec Iterative deepening sans table de transposition}
+
+L'objectif attendu est une amélioration du temps de calcul, à performance stratégique comparable.\\
+
+Les tableaux suivants présentent les résultats obtenus sur 60 matchs, selon le même protocole que les expériences précédentes :\\
+
+\begin{tabular}{|l|c|r|}
+    \hline
+    Agent & Wins & \% \\
+    \hline
+    my\_agent\_table.py & 24 & 40.0\% \\
+    my\_agent\_iter.py & 36 & 60.0\% \\
+    Draws & 0 & 0.0\%\\
+    \hline 
+\end{tabular}
+\begin{tabular}{|l|r|r|r|r|}
+    \hline
+    Agent & Total & Moves & Avg/move & Max move \\
+    \hline
+    my\_agent\_table.py & 1216.808s & 121 & 10.056s & 27.496s \\
+    my\_agent\_iter.py & 1193.032s & 145 & 8.228s & 30.890s \\
+    \hline
+\end{tabular}
+
+\bigskip
+
+Les résultats montrent que cette première version avec table est moins performante. L'interprétation la plus plausible est un surcoût CPU qui annule le bénéfice du cache.
+
+Les causes probables sont les suivantes : \\
+
+\begin{itemize}
+    \item Construction de clé coûteuse à chaque nœud (conversion répétée du plateau en tuples immuables).
+    \item Beaucoup de lookups/insertions dict Python à chaque nœud.
+    \item Le taux de réutilisation n’est pas assez élevé pour compenser ce coût.
+    \item Croissance du cache au cours de la partie, avec impact possible en fin de jeu.
+\end{itemize}
+
+\subsection{Optimisation de la table de transposition}
+Pour réduire ces coûts, nous avons appliqué les optimisations suivantes :
+
+\begin{itemize}
+    \item Vidage de la table au début de chaque coup (pas de croissance inter-coups).
+    \item Utilisation de la table uniquement à partir d'une profondeur minimale.
+    \item Pas de construction de la clé quand cutoff == 0.
+    \item Cache borné (\texttt{clear} au-delà d'un seuil) pour limiter la dérive de performance.
+\end{itemize}
+
+Les résultats montrent une amélioration nette par rapport à la version table non optimisée : l'écart devient faible et statistiquement peu concluant sur 60 parties. Une campagne plus large (100 à 200 parties) serait nécessaire pour conclure de manière robuste.
+
+\begin{tabular}{|l|c|r|}
+    \hline
+    Agent & Wins & \% \\
+    \hline
+    my\_agent\_table.py & 31 & 51.7\% \\
+    my\_agent\_iter.py & 29 & 48.3\% \\
+    Draws & 0 & 0.0\%\\
+    \hline 
+\end{tabular}
+\begin{tabular}{|l|r|r|r|r|}
+    \hline
+    Agent & Total & Moves & Avg/move & Max move \\
+    \hline
+    my\_agent\_table.py & 549.253s & 121 & 4.540s & 27.496s \\
+    my\_agent\_iter.py & 1193.032s & 145 & 8.228s & 30.890s \\
+    \hline
+\end{tabular}
+
+\bigskip
+
+Malgré ces optimisations, la version avec table ne dépasse pas clairement l'agent de base en taux de victoire. En revanche, elle améliore la stabilité temporelle (temps maximal par coup plus faible). Sur Oxono, la table de transposition doit donc être considérée comme un compromis : meilleure régularité en temps, mais gain stratégique non garanti.
+
+\begin{tabular}{|l|c|r|}
+    \hline
+    Agent & Wins & \% \\
+    \hline
+    my\_agent.py & 32 & 53.3\% \\
+    my\_agent\_table.py & 28 & 46.7\% \\
+    Draws & 0 & 0.0\%\\
+    \hline 
+\end{tabular}
+\begin{tabular}{|l|r|r|r|r|}
+    \hline
+    Agent & Total & Moves & Avg/move & Max move \\
+    \hline
+    my\_agent.py & 7230.787s & 317 & 22.810s & 150.785s \\
+    my\_agent\_table.py & 3130.371s & 315 & 9.938s & 26.492s \\
+    \hline
+\end{tabular}
+
+\section{Agent MCTS}
+
+\subsection{Pourquoi ce choix ?}
+Après les limites observées sur les variantes Alpha-Bêta, nous avons implémenté un agent \textbf{MCTS} (Monte-Carlo Tree Search). Cette approche est adaptée à une contrainte de temps, car la recherche peut être interrompue à tout moment en conservant le meilleur coup estimé.
+
+\subsection{Principe de l'algorithme}
+Chaque itération suit 4 étapes : \textit{sélection} d'un nœud prometteur, \textit{expansion} d'une nouvelle action, \textit{simulation} jusqu'à un état terminal, puis \textit{rétropropagation} du résultat. Le choix en sélection utilise UCT, qui équilibre exploitation et exploration.
+
+\subsection{Détails d'implémentation}
+Dans notre code, chaque nœud stocke l'état du jeu, les actions non encore testées, le nombre de visites et la somme des récompenses. La boucle principale tourne jusqu'au timeout, avec un budget calculé à partir du temps restant et du nombre de pièces encore disponibles.
+
+Pour la robustesse temporelle, nous utilisons \texttt{time.perf\_counter()} et une exception de timeout, ce qui garantit l'arrêt propre de la recherche et le retour d'un coup légal même en fin de budget.
+
+\subsection{Choix stratégiques de l'agent}
+Nous avons ajouté des améliorations simples mais efficaces :
+\begin{itemize}
+    \item \textbf{Coup gagnant immédiat} prioritaire avant MCTS.
+    \item \textbf{Sélection adversariale} : dans les nœuds où l'adversaire joue, la valeur d'exploitation est inversée pour mieux modéliser un comportement minimisant.
+    \item \textbf{Simulation guidée} : pendant les rollouts, un coup gagnant direct est joué en priorité, sinon un coup aléatoire est choisi.
+    \item \textbf{Décision finale robuste} : choix du coup le plus visité, avec départage par valeur moyenne.
+\end{itemize}
+
+\subsection{Bilan}
+Cette implémentation MCTS produit un agent plus stable sous contrainte de temps et moins dépendant d'une heuristique complexe.
+
+\textbf{MCTS vs baseline Alpha-Bêta.} La campagne complète \texttt{mcts\_base2.txt} + \texttt{base2\_mcts.txt} (agrégée : \texttt{res\_base2\_mcts.txt}) confirme une supériorité nette face à \texttt{my\_agent\_basic2.py} : \textbf{95 victoires sur 100} (95.0\%).\\
+
+\begin{tabular}{|l|c|r|}
+    \hline
+    Agent & Wins & \% \\
+    \hline
+    my\_agent\_MCTS.py & 95 & 95.0\% \\
+    my\_agent\_basic2.py & 4 & 4.0\% \\
+    Draws & 0 & 0.0\%\\
+    \hline
+\end{tabular}
+\begin{tabular}{|l|r|r|r|r|}
+    \hline
+    Agent & Total & Moves & Avg/move & Max move \\
+    \hline
+    my\_agent\_MCTS.py & 4026.846s & 732 & 5.501s & 209.790s \\
+    my\_agent\_basic2.py & 2691.612s & 686 & 3.924s & 55.164s \\
+    \hline
+\end{tabular}
+
+\bigskip
+\textbf{MCTS amélioré vs MCTS basique.} Pour isoler l'impact des améliorations tactiques, nous avons confronté \texttt{my\_agent\_MCTS.py} à \texttt{my\_agent\_MCTS\_basic.py} (UCT pur, simulations aléatoires, sans détection de coup gagnant ni sélection adversariale), sur 100 parties (\texttt{res\_basic\_mcts.txt}) :\\
+
+\begin{tabular}{|l|c|r|}
+    \hline
+    Agent & Wins & \% \\
+    \hline
+    my\_agent\_MCTS.py & 100 & 100.0\% \\
+    my\_agent\_MCTS\_basic.py & 0 & 0.0\% \\
+    Draws & 0 & 0.0\%\\
+    \hline
+\end{tabular}
+\begin{tabular}{|l|r|r|r|r|}
+    \hline
+    Agent & Total & Moves & Avg/move & Max move \\
+    \hline
+    my\_agent\_MCTS.py & 2694.761s & 549 & 4.908s & 6.109s \\
+    my\_agent\_MCTS\_basic.py & 998.314s & 499 & 2.001s & 2.017s \\
+    \hline
+\end{tabular}
+
+\bigskip
+Ce résultat illustre l'importance des améliorations implémentées. Chaque partie est perdante pour la version basique quel que soit le côté. On note également que \texttt{my\_agent\_MCTS\_basic.py} sature son budget à exactement 2.0s par coup (Max/move = 2.017s), ce qui indique un bon comportement temporel, mais une qualité de décision nettement inférieure sur ce budget.
+
+\textbf{Agent final soumis :} \texttt{my\_agent\_MCTS.py} est l'agent retenu pour la compétition.

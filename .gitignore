@@ -1,0 +1,67 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs and run outputs
+*.log
+agent_base2/
+agent_base/
+base2_agent/
+base_agent/
+base1_base2/
+base2_base1/
+base2_mcts/
+basic_mcts/
+mcts_base2/
+mcts_basic/
+RESULTATS/
+
+# Trained models and large artifacts
+*.pth
+*.pt
+*.pkl
+*.joblib
+*.zip
+
+# Local data/results artifacts (keep code-focused portfolio repo)
+dataset*.json
+res_*.txt
+agent_*.txt
+base*_agent.txt
+base*_mcts.txt
+mcts_*.txt
+
+# Notebook and local exports
+*.ipynb
+
+# Local archives and temporary outputs
+*.tmp
+*.bak
+
+# Optional local datasets (uncomment if needed)
+# data/
+# datasets/

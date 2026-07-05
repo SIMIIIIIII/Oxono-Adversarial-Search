@@ -9,60 +9,123 @@ class MyAgent(Agent):
         super().__init__(player)
 
     def act(self, state: State, remaining_time):
-        remaining_pieces = 16 - state.pieces_x[self.player] - state.pieces_o[self.player]
+        actions = Game.actions(state)
+        if not actions:
+            return None
 
-        timout = max((remaining_time / max(remaining_pieces, 1)) * 0.8, 0.5)
-        start = time.time()
-        cutoff = calculer_depth(state)
+        max_depth = calculer_depth(state)
+        if max_depth == 0:
+            return random.choice(actions)
 
-        if cutoff == 0 : return random.choice(Game.actions(state))
+        budget = compute_turn_budget(state, remaining_time, self.player)
+        deadline = time.perf_counter() + budget
 
-        value, move = max_value(
-            state=state,
-            alpha=float("-inf"),
-            beta=float("inf"),
-            cutoff=cutoff,
-            root_player=self.player,
-            timout=timout,
-            start=start
-        )
-        
-        if move is None:
-            actions = Game.actions(state)
-            return actions[0] if actions else None
-        return move
-    
+        best_move = random.choice(actions)
 
-def calculer_depth(state : State):
+        # Keep the best move from the last fully completed depth.
+        for depth in range(1, max_depth + 1):
+            try:
+                _, move = max_value(
+                    state=state,
+                    alpha=float("-inf"),
+                    beta=float("inf"),
+                    cutoff=depth,
+                    root_player=self.player,
+                    deadline=deadline,
+                )
+                if move is not None:
+                    best_move = move
+            except SearchTimeout:
+                break
+
+        return best_move
+
+
+class SearchTimeout(Exception):
+    pass
+
+
+def check_deadline(deadline: float):
+    if time.perf_counter() >= deadline:
+        raise SearchTimeout()
+
+
+def compute_turn_budget(state: State, remaining_time: float, player: int) -> float:
+    remaining_moves = state.pieces_x[player] + state.pieces_o[player]
+    safe_remaining = max(remaining_time - 0.2, 0.05)
+
+    if remaining_moves <= 1:
+        return safe_remaining
+
+    nominal = safe_remaining / remaining_moves
+    return max(0.05, min(safe_remaining, nominal * 1.1))
+
+
+def calculer_depth(state: State):
     nb_pieces = 32 - state.pieces_x[0] - state.pieces_x[1] - state.pieces_o[0] - state.pieces_o[1]
-
-    if nb_pieces == 0 : return 0
-
+    
+    if nb_pieces <= 2 : return nb_pieces
     if nb_pieces < 10 : return 5
-    elif nb_pieces < 24 : return 6
-    else : return 6 + (nb_pieces - 24) // 3
+    if nb_pieces < 24 : return 6
+    return 6 + (nb_pieces - 24) // 3
 
 
-def max_value(state: State, alpha, beta, cutoff: int, root_player: int, timout : float, start : float):
+def order_actions(state: State, actions, root_player: int, maximizing: bool):
+    player = Game.to_move(state)
+    center = 2.5
+
+    def action_priority(action):
+        totem, _, piece_pos = action
+        pr, pc = piece_pos
+        symbol = "o" if totem == "o" else "x"
+
+        score = -(abs(pr - center) + abs(pc - center))
+        for dr, dc in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nr, nc = pr + dr, pc + dc
+            if not (0 <= nr < 6 and 0 <= nc < 6):
+                continue
+            cell = state.board[nr][nc]
+            if cell is None:
+                continue
+            if cell[1] == player:
+                score += 2.5
+            if cell[0] == symbol:
+                score += 2.0
+            if cell[1] != player:
+                score += 0.8
+
+        if player == root_player:
+            score += 0.1
+
+        return score
+
+    return sorted(actions, key=action_priority, reverse=maximizing)
+
+
+def max_value(state: State, alpha, beta, cutoff: int, root_player: int, deadline: float):
+    check_deadline(deadline)
+
     if Game.is_terminal(state):
         return Game.utility(state, root_player), None
-    
-    now = time.time() - start
-    if cutoff == 0 or now >= timout:
+
+    if cutoff == 0:
         return evaluation(state, root_player), None
 
     v = float("-inf")
     best_move = None
 
-    for a in Game.actions(state):
-        copy_state = state.copy()
-        Game.apply(copy_state, a)
+    actions = order_actions(state, Game.actions(state), root_player, maximizing=True)
+    for action in actions:
+        check_deadline(deadline)
 
-        v2, _ = min_value(copy_state, alpha, beta, cutoff - 1, root_player, timout, start)
+        copy_state = state.copy()
+        Game.apply(copy_state, action)
+
+        v2, _ = min_value(copy_state, alpha, beta, cutoff - 1, root_player, deadline)
 
         if v2 > v:
             v = v2
-            best_move = a
+            best_move = action
 
         alpha = max(alpha, v)
         if alpha >= beta:
@@ -71,26 +134,30 @@ def max_value(state: State, alpha, beta, cutoff: int, root_player: int, timout :
     return v, best_move
 
 
-def min_value(state: State, alpha, beta, cutoff: int, root_player: int, timout : float, start : float):
+def min_value(state: State, alpha, beta, cutoff: int, root_player: int, deadline: float):
+    check_deadline(deadline)
+
     if Game.is_terminal(state):
         return Game.utility(state, root_player), None
-    
-    now = time.time() - start
-    if cutoff == 0 or now >= timout:
+
+    if cutoff == 0:
         return evaluation(state, root_player), None
 
     v = float("inf")
     best_move = None
 
-    for a in Game.actions(state):
-        copy_state = state.copy()
-        Game.apply(copy_state, a)
+    actions = order_actions(state, Game.actions(state), root_player, maximizing=False)
+    for action in actions:
+        check_deadline(deadline)
 
-        v2, _ = max_value(copy_state, alpha, beta, cutoff - 1, root_player, timout, start)
+        copy_state = state.copy()
+        Game.apply(copy_state, action)
+
+        v2, _ = max_value(copy_state, alpha, beta, cutoff - 1, root_player, deadline)
 
         if v2 < v:
             v = v2
-            best_move = a
+            best_move = action
 
         beta = min(beta, v)
         if alpha >= beta:

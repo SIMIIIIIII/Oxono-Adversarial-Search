@@ -1,13 +1,5 @@
-python3 manager.py -n 20 -p0 my_agent_basic.py -p1 my_agent_basic2.py -l base1_base2 >> base1_base2.txt
+python3 manager.py -n 50 -p0 my_agent_MCTS.py -p1 my_agent_MCTS_basic.py -l mcts_basic >> mcts_basic.txt
 
-python3 manager.py -n 20 -p1 my_agent_basic.py -p0 my_agent_basic2.py -l base2_base1 >> base2_base1.txt
+python3 manager.py -n 50 -p1 my_agent_MCTS.py -p0 my_agent_MCTS_basic.py -l basic_mcts >> basic_mcts.txt
 
-python3 manager.py -n 20 -p0 my_agent.py -p1 my_agent_basic.py -l agent_base >> agent_base.txt
-
-python3 manager.py -n 20 -p1 my_agent.py -p0 my_agent_basic.py -l base_agent >> base_agent.txt
-
-python3 manager.py -n 20 -p0 my_agent.py -p1 my_agent_basic2.py -l agent_base2 >> agent_base2.txt
-
-python3 manager.py -n 20 -p1 my_agent.py -p0 my_agent_basic2.py -l base2_agent >> base2_agent.txt
-
-python3 analyze_results.py
+python3 analyze_results.py mcts_basic.txt basic_mcts.txt  >> res_basic_mcts.txt
